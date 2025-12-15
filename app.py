@@ -1,3 +1,60 @@
+# import streamlit as st
+# import pickle
+# import string
+# import nltk
+
+# from nltk.corpus import stopwords
+# from nltk.stem.porter import PorterStemmer
+
+# # Download nltk resources (runs once)
+# nltk.download('punkt')
+# nltk.download('stopwords')
+
+# ps = PorterStemmer()
+# stop_words = set(stopwords.words('english'))
+
+# # -------------------- Text Preprocessing --------------------
+# def transform_text(text):
+#     text = text.lower()
+#     text = nltk.word_tokenize(text)
+
+#     return " ".join(
+#         ps.stem(word)
+#         for word in text
+#         if word.isalnum() and word not in stop_words
+#     )
+
+# # -------------------- Load Model & Vectorizer --------------------
+# tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
+# model = pickle.load(open('model.pkl', 'rb'))
+
+# # -------------------- Streamlit UI --------------------
+# st.title("📩 SMS / Email Spam Classifier")
+
+# input_sms = st.text_area("Enter the message")
+
+# if st.button("Predict"):
+#     if input_sms.strip() == "":
+#         st.warning("Please enter a message")
+#     else:
+#         # Preprocess
+#         transformed_sms = transform_text(input_sms)
+
+#         # Vectorize
+#         vector_input = tfidf.transform([transformed_sms])
+
+#         # Predict
+#         result = model.predict(vector_input)[0]
+
+#         # Display result
+#         if result == 1:
+#             st.error("🚨 Spam Message")
+#         else:
+#             st.success("✅ Not Spam")
+
+
+#############################################################################
+
 import streamlit as st
 import pickle
 import string
@@ -5,6 +62,13 @@ import nltk
 
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+
+# -------------------- PAGE CONFIG (UI) --------------------
+st.set_page_config(
+    page_title="Spam Classifier",
+    page_icon="📩",
+    layout="centered"
+)
 
 # -------------------- NLTK FIX FOR STREAMLIT CLOUD --------------------
 nltk.data.path.append("/home/appuser/nltk_data")
@@ -38,26 +102,67 @@ def transform_text(text):
 tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
 model = pickle.load(open('model.pkl', 'rb'))
 
-# -------------------- STREAMLIT UI --------------------
-st.title("📩 SMS / Email Spam Classifier")
+# -------------------- SIDEBAR (UI ONLY) --------------------
+st.sidebar.title("ℹ️ About")
+st.sidebar.markdown(
+    """
+    **SMS / Email Spam Classifier**
 
-input_sms = st.text_area("Enter the message")
+    - Built using **Machine Learning**
+    - Model: **Multinomial Naive Bayes**
+    - Vectorization: **TF-IDF**
+    - Hosted on **Streamlit Cloud**
+    
+    🔍 Paste any message to check whether it is **Spam** or **Not Spam**.
+    """
+)
 
-if st.button("Predict"):
+st.sidebar.markdown("---")
+st.sidebar.markdown("👨‍💻 **Developed by:** *Harshith S*")
+
+# -------------------- MAIN UI --------------------
+st.markdown(
+    "<h1 style='text-align: center;'>📩 SMS / Email Spam Classifier</h1>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<p style='text-align: center; color: gray;'>Detect spam messages instantly using Machine Learning</p>",
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
+
+input_sms = st.text_area(
+    "✉️ Enter your message below:",
+    height=150,
+    placeholder="Type or paste the SMS / Email message here..."
+)
+
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    predict_btn = st.button("🔍 Predict", use_container_width=True)
+
+# -------------------- PREDICTION OUTPUT --------------------
+if predict_btn:
     if input_sms.strip() == "":
-        st.warning("Please enter a message")
+        st.warning("⚠️ Please enter a message to classify.")
     else:
-        # Preprocess
         transformed_sms = transform_text(input_sms)
-
-        # Vectorize
         vector_input = tfidf.transform([transformed_sms])
-
-        # Predict
         result = model.predict(vector_input)[0]
 
-        # Display result
+        st.markdown("---")
+
         if result == 1:
-            st.error("🚨 Spam Message")
+            st.error("🚨 **This message is classified as SPAM**")
         else:
-            st.success("✅ Not Spam")
+            st.success("✅ **This message is NOT SPAM**")
+
+# -------------------- FOOTER --------------------
+st.markdown("---")
+st.markdown(
+    "<p style='text-align: center; font-size: 12px; color: gray;'>Made with ❤️ using Streamlit & Machine Learning</p>",
+    unsafe_allow_html=True
+)
