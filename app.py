@@ -6,14 +6,24 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# Download nltk resources (runs once)
-nltk.download('punkt')
-nltk.download('stopwords')
+# -------------------- NLTK FIX FOR STREAMLIT CLOUD --------------------
+nltk.data.path.append("/home/appuser/nltk_data")
 
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+# -------------------- SETUP --------------------
 ps = PorterStemmer()
 stop_words = set(stopwords.words('english'))
 
-# -------------------- Text Preprocessing --------------------
+# -------------------- TEXT PREPROCESSING --------------------
 def transform_text(text):
     text = text.lower()
     text = nltk.word_tokenize(text)
@@ -24,11 +34,11 @@ def transform_text(text):
         if word.isalnum() and word not in stop_words
     )
 
-# -------------------- Load Model & Vectorizer --------------------
+# -------------------- LOAD MODEL & VECTORIZER --------------------
 tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
 model = pickle.load(open('model.pkl', 'rb'))
 
-# -------------------- Streamlit UI --------------------
+# -------------------- STREAMLIT UI --------------------
 st.title("📩 SMS / Email Spam Classifier")
 
 input_sms = st.text_area("Enter the message")
